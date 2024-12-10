@@ -60,6 +60,29 @@ def getData(target_date, zip_code):
         print("Error occurred while fetching weather data. ")
         print(response.status_code)
         quit()
+
+    weather_url = f"WEATHER API URL"
+    response = requests.get(weather_url)
+
+    if response.status_code == 200:
+        data = response.json()
+        # humidity = ___
+        # cloud_cover = ___
+        # wind = ___
+        # surface_temperature_f = ___
+        # dew_point_f = ___
+    else:
+        print("Error occurred while fetching sunset data. ")
+        print(response.status_code)
+        quit()
+
+    sunset_hour = int(sunset_time[:2]) + 12
+
+    unix_time = datetime.datetime.now()
+    unix_time = unix_time.replace(hour=sunset_hour, minute=0, second=0, microsecond=0)
+    unix_time = int(time.mktime(unix_time.timetuple()))
+    if target_date == "Tomorrow":
+        unix_time += 86400
     
     return
 
