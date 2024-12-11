@@ -84,6 +84,26 @@ def getData(target_date, zip_code):
     if target_date == "Tomorrow":
         unix_time += 86400
     
+    weather_url = "___"
+    response = requests.get(weather_url)
+
+    if response.status_code == 200:
+        data = response.json()
+        for i in range(48):
+            if data['list'][i]['dt'] == unix_time:
+                aqi_data = data['list'][i]
+                continue
+        print(aqi_data)
+
+    else:
+        print("Error occurred while fetching AQI. ")
+        print(response.status_code)
+        quit()
+
+    cloud_height = "__"
+    print(f"-> TOTAL SCORE: ")
+    print(f"-> LOCATION: ")
+
     return
 
 def validate_zip_code(zip_code):
