@@ -12,8 +12,8 @@ def index():
 
 @app.route("/check_sunset", methods=["POST"])
 def check_sunset():
-    zipcode = request.args.get("zip")
-    if not zipcode:
+    zipcode = request.form.get("zipcode")
+    if not zipcode or not zipcode.isdecimal() or len(zipcode) != 5 or not valid_zip(zipcode):
         return render_template("index.html", error="Please enter a valid ZIP Code")
     
     latitude, longitude = geocode_zip(zipcode)
@@ -26,6 +26,8 @@ def check_sunset():
                            location_type=location_type,
                            zipcode=zipcode)
 
+def valid_zip(zipcode):
+    return True
 def geocode_zip(zipcode):
     return 0, 0
 
