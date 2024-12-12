@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 import os
+import requests
 
 # Name: Ryne Acheson
 # Date Started: June 26th 2023
@@ -25,6 +26,9 @@ def check_sunset():
         return render_template("index.html", error="Please enter a valid ZIP Code")
     
     latitude, longitude = geocode_zip(zipcode)
+    if latitude is None or longitude is None:
+        return render_template("index.html", error="Invalid ZIP Code Provided")
+    
     weather_data = get_weather_data(latitude, longitude)
     score = compute_sunset_score(weather_data)
     location_type = determine_location_type(latitude, longitude)
@@ -34,12 +38,23 @@ def check_sunset():
                            location_type=location_type,
                            zipcode=zipcode)
 
-def valid_zip(zipcode):
-    return True
+def geocode_zip(zip_code, country_code="US"):
 
-def geocode_zip(zipcode):
-    return 0, 0
-
+    url = f"http://api.openweathermap.org/geo/1.0/zip"
+    params = {
+        "zip": f"{zip_code}, {country_code}",
+        "appid": WEATHER_API_KEY
+    }
+    
+    response = requests.get(url, params=params, timeout=10)
+    if response.status_code == 200:
+        data = response.json()
+        latitude = data.get("lat")
+        longitude = data.get("lon")
+        return latitude, longitude
+    else:
+        print(f"Geocoding failed for ZIP: {zip_code}. Status Code: {response.status_code}")
+        
 def get_weather_data(latitude, longitude):
     return {
         "cloud_cover": 0,
