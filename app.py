@@ -1,11 +1,19 @@
 from flask import Flask, request, jsonify, render_template
-import requests
+from dotenv import load_dotenv
+import os
 
 # Name: Ryne Acheson
 # Date Started: June 26th 2023
 # Date Finished:
 
+load_dotenv()
+
 app = Flask(__name__)
+
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
+if not WEATHER_API_KEY:
+    raise ValueError("No WEATHER_API_KEY set for Flask application")
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
@@ -28,6 +36,7 @@ def check_sunset():
 
 def valid_zip(zipcode):
     return True
+
 def geocode_zip(zipcode):
     return 0, 0
 
