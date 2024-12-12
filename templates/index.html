@@ -9,9 +9,20 @@
 </head>
 <body>
     <h1>Check Your Sunset Score!</h1>
-    <form action="/check_sunset" method="post">
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+    <form action="{{ url_for('check_sunset') }}" method="post">
         <input type="text" name="zipcode" placeholder="Enter Zip Code" required>
         <button type="submit">Get Score</button>
     </form>
+
+    {% if score is defined %}
+        <hr>
+        <h2>Results for ZIP: {{ zipcode}}</h2>
+        <p>Sunset Score: {{ score }}</p>
+        <p>Location Type: {{ location_type }}</p>
+
+    {% endif %}
 </body>
 </html>
