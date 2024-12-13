@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport", content="width=device-width, initial-scale=1.0">
     <title>Sunset Predictor</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="..\static\style.css">
 
 </head>
 <body>
-    <h1>Check Your Sunset Score!</h1>
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
-    <form action="{{ url_for('check_sunset') }}" method="post">
-        <input type="text" name="zipcode" placeholder="Enter Zip Code" required>
-        <button type="submit">Get Score</button>
-    </form>
+    <div class="sunset-container">
+        <h1>Check Your Sunset Score!</h1>
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+        <form action="{{ url_for('check_sunset') }}" method="post">
+            <input type="text" name="zipcode" placeholder="Enter Zip Code" required>
+            <button type="submit">Get Score</button>
+        </form>
+    </div>
 
     {% if score is defined %}
         <hr>
