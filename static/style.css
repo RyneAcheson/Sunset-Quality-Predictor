@@ -1,8 +1,14 @@
 body {
+    background-image: url("../static/background.jpg");
+    background-size: cover; /* Scale the image to cover the entire page */
+    background-repeat: no-repeat; /* Prevent repeating */
+    background-position: center; /* Center the background image */
+    background-attachment: fixed;
     font-family: sans-serif;
+    height: 100vh;
     text-align: center;
     margin: 0;
-    padding: 20px;
+    padding: 0;
 }
 
 form {
@@ -21,7 +27,7 @@ form {
     transform: translate(-50%, -50%); /* Offset by 50% of its width and height */
     text-align: center; /* Center align the text */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-    background-color: #fff; /* Optional: Set a white background */
+    background-color: #f6EEE3; /* Optional: Set a white background */
 }
 
 
@@ -47,7 +53,7 @@ form {
 }
 
 .score-display {
-    margin-top: 20px;
+    margin-top: 0;
 }
 
 .sunset_scene {
