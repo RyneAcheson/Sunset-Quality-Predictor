@@ -87,6 +87,13 @@ def geocode_zip(zip_code, country_code="us"):
     return None, None
 
 def get_weather_data(latitude, longitude):
+
+    url = ""
+    response = requests.reqest(url)
+    if response.status_code == 200:
+        print("good")
+    else:
+        print("bad")
     return {
         "cloud_cover": 0,
         "cloud_height": 0,
