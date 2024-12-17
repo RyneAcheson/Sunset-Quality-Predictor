@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 import os
 import requests
+import datetime
+import time
 
 # Name: Ryne Acheson
 # Date Started: June 26th 2023
@@ -38,7 +40,7 @@ def check_sunset():
     if latitude is None or longitude is None:
         return render_template("index.html", error="Invalid ZIP Code Provided")
     
-    weather_data = get_weather_data(latitude, longitude)
+    weather_data = get_weather_data(latitude, longitude, "Today")
     score = compute_sunset_score(weather_data)
     location_type = determine_location_type(latitude, longitude)
 
@@ -86,14 +88,46 @@ def geocode_zip(zip_code, country_code="us"):
 
     return None, None
 
-def get_weather_data(latitude, longitude):
+def get_weather_data(latitude, longitude, target_day="Today"):
+    
+    sunset_time = 0
+    sunset_hour = 0
+    unix_time = 0
+    humidity = 0
+    aqi_data = 0
+    cloud_cover = 0
+    cloud_height = 0
+    cloud_data = []
+    surface_temperature_f = 0
+    dew_point_f = 0
+    day = 0
 
-    url = ""
-    response = requests.reqest(url)
+
+    if target_day == "Today":
+        day = datetime.date.today()
+    elif target_day == "Tomorrow":
+        day = datetime.date.today() + datetime.timedelta(1)
+
+    url = f"http://api.weatherapi.com/v1/astronomy.json?key={WEATHER_API_KEY}&q={latitude},{longitude}&dt={day}"
+    response = requests.get(url)
+
     if response.status_code == 200:
-        print("good")
+        data = response.json()
+        sunset_time = data["astronomy"]["astro"]["sunset"]
+        sunset_hour = int(sunset_time[:2]) + 12
+        unix_time = datetime.datetime.now()
+        unix_time = unix_time.replace(hour=sunset_hour, minute=0, second=0, microsecond=0)
+        unix_time = int(time.mktime(unix_time.timetuple()))
+
+        print(sunset_time)
+        print(unix_time)
     else:
-        print("bad")
+       print("Error occurred wwhile fetching the sunset time. ")
+       print(response.status_code)
+       quit()
+        
+
+    
     return {
         "cloud_cover": 0,
         "cloud_height": 0,
