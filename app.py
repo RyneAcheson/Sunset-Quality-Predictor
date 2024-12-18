@@ -122,10 +122,27 @@ def get_weather_data(latitude, longitude, target_day="Today"):
         print(sunset_time)
         print(unix_time)
     else:
-       print("Error occurred wwhile fetching the sunset time. ")
+       print("Error occurred while fetching the sunset time. ")
        print(response.status_code)
        quit()
         
+    url = f"http://api.weatherapi.com/v1/history.json?key={WEATHER_API_KEY}&q={latitude},{longitude}&dt={day}&hour={sunset_time}&aqi=yes"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        humidity = data['forecast']['forecastday'][0]['hour'][0]['humidity']
+        cloud_cover = data['forecast']['forecastday'][0]['hour'][0]['cloud']
+        wind = data['forecast']['forecastday'][0]['hour'][0]['wind_mph']
+        surface_temperature_f = data['forecast']['forecastday'][0]['hour'][0]['temp_f']
+        dew_point_f = data['forecast']['forecastday'][0]['hour'][0]['dewpoint_f']
+        print(f"HUMIDITY: {humidity}")
+        print(f"CLOUD COVER %: {cloud_cover}")
+
+    else:
+        print("Error occurred while gathering weather data")
+        print(response.status_code)
+        quit()
 
     
     return {
