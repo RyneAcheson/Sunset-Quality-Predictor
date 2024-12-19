@@ -21,6 +21,10 @@ ZIP_CODE_API_KEY = os.getenv("ZIP_CODE_API_KEY")
 if not ZIP_CODE_API_KEY:
     raise ValueError("No ZIP_CODE_API_KEY set for Flask application")
 
+OPEN_WEATHER_API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
+if not OPEN_WEATHER_API_KEY:
+    raise ValueError("No OPEN_WEATHER_API_KEY set for Flask application")
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
@@ -145,6 +149,21 @@ def get_weather_data(latitude, longitude, target_day="Today"):
         quit()
 
     
+    url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat={latitude}&lon={longitude}&appid={OPEN_WEATHER_API_KEY}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        for i in range(48):
+            if data['list'][i]['dt'] == unix_time:
+                aqi_data = data['list'][i]
+                continue
+        print(aqi_data)
+    
+    else:
+        print("Error occurred while fetching AQI. ")
+        print(response.status_code)
+        quit()
+        
     return {
         "cloud_cover": 0,
         "cloud_height": 0,
