@@ -153,6 +153,7 @@ def get_weather_data(latitude, longitude, target_day="Today"):
     response = requests.get(url)
 
     if response.status_code == 200:
+        data = response.json()
         for i in range(48):
             if data['list'][i]['dt'] == unix_time:
                 aqi_data = data['list'][i]
@@ -164,6 +165,32 @@ def get_weather_data(latitude, longitude, target_day="Today"):
         print(response.status_code)
         quit()
         
+
+    date = datetime.datetime.now().strftime("%Y%m%d")
+    print(date)
+    url = f"https://power.larc.nasa.gov/api/temporal/daily/point"
+    params = {
+        "parameters": "AOD",
+        "community": "RE",
+        "latitude": latitude,
+        "longitude": longitude,
+        "start": date,
+        "end": date,
+        "format": "JSON"
+    }
+
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        aod_values = data["properties"]["parameter"]["AOD"]
+        avg_aod = sum(aod_values.values()) / len(aod_values)
+        return avg_aod
+    else:
+        print("Error occurred while fetching AQI. ")
+        print(response.status_code)
+        quit()
+
+
     return {
         "cloud_cover": 0,
         "cloud_height": 0,
