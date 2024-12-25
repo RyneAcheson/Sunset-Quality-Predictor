@@ -92,20 +92,7 @@ def geocode_zip(zip_code, country_code="us"):
 
     return None, None
 
-def get_weather_data(latitude, longitude, target_day="Today"):
-    
-    sunset_time = 0
-    sunset_hour = 0
-    unix_time = 0
-    humidity = 0
-    aqi_data = 0
-    cloud_cover = 0
-    cloud_height = 0
-    cloud_data = []
-    surface_temperature_f = 0
-    dew_point_f = 0
-    day = 0
-
+def get_day_and_time(latitude, longitude, target_day):
 
     if target_day == "Today":
         day = datetime.date.today()
@@ -129,7 +116,15 @@ def get_weather_data(latitude, longitude, target_day="Today"):
        print("Error occurred while fetching the sunset time. ")
        print(response.status_code)
        quit()
-        
+    
+    return {
+        "sunset_time": sunset_time,
+        "sunset_hour": sunset_hour,
+        "unix_time": unix_time,
+        "day": day
+    }
+
+def get_weather_data(latitude, longitude, day, sunset_time):
     url = f"http://api.weatherapi.com/v1/history.json?key={WEATHER_API_KEY}&q={latitude},{longitude}&dt={day}&hour={sunset_time}&aqi=yes"
     response = requests.get(url)
 
@@ -147,8 +142,17 @@ def get_weather_data(latitude, longitude, target_day="Today"):
         print("Error occurred while gathering weather data")
         print(response.status_code)
         quit()
-
     
+    return {
+        "data": data,
+        "humidity": humidity,
+        "cloud_cover": cloud_cover,
+        "wind": wind,
+        "surface_temperature_f": surface_temperature_f,
+        "dew_point_f": dew_point_f,
+    }
+
+def get_aqi_data(latitude, longitude):
     url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat={latitude}&lon={longitude}&appid={OPEN_WEATHER_API_KEY}"
     response = requests.get(url)
 
@@ -164,18 +168,15 @@ def get_weather_data(latitude, longitude, target_day="Today"):
         print("Error occurred while fetching AQI. ")
         print(response.status_code)
         quit()
-        
-    # USE AN API TO FIND THE AEROSOL OPTICAL DEPTH HERE
 
-
-    # RETURN THE INFORMATION IN A DICTIONARY
     return {
-        "cloud_cover": 0,
-        "cloud_height": 0,
-        "humidity": 0
+        "aqi_data": aqi_data
     }
 
+def get_aod(latitude, longitude):
+    return 0
 
+    
 # Create a formula to determine the quality of a sunset on a score scale of 0-1000 given a dictionary of data 
 def compute_sunset_score(data):
     score = 0
