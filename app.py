@@ -165,32 +165,10 @@ def get_weather_data(latitude, longitude, target_day="Today"):
         print(response.status_code)
         quit()
         
-
-    date = datetime.datetime.now().strftime("%Y%m%d")
-    print(date)
-    url = f"https://power.larc.nasa.gov/api/temporal/daily/point"
-    params = {
-        "parameters": "AOD",
-        "community": "RE",
-        "latitude": latitude,
-        "longitude": longitude,
-        "start": date,
-        "end": date,
-        "format": "JSON"
-    }
-
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        aod_values = data["properties"]["parameter"]["AOD"]
-        avg_aod = sum(aod_values.values()) / len(aod_values)
-        return avg_aod
-    else:
-        print("Error occurred while fetching AQI. ")
-        print(response.status_code)
-        quit()
+    # USE AN API TO FIND THE AEROSOL OPTICAL DEPTH HERE
 
 
+    # RETURN THE INFORMATION IN A DICTIONARY
     return {
         "cloud_cover": 0,
         "cloud_height": 0,
@@ -198,10 +176,12 @@ def get_weather_data(latitude, longitude, target_day="Today"):
     }
 
 
+# Create a formula to determine the quality of a sunset on a score scale of 0-1000 given a dictionary of data 
 def compute_sunset_score(data):
     score = 0
     return score
 
+# Either using an API or some other way, determine the location type (urban, suburban, city, rural, beach)
 def determine_location_type(latitude, longitude):
     return "beach"
 
