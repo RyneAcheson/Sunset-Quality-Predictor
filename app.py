@@ -49,7 +49,10 @@ def check_sunset():
     weather_data |= get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"])
     weather_data != get_aqi_data(latitude, longitude, weather_data["unix_time"])
     weather_data |= get_aod(latitude, longitude)
-    print(weather_data)
+    print("Day and Time Data:", get_day_and_time(latitude, longitude, "Today"))
+    print("Weather Data:", get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"]))
+    print("AQI Data:", get_aqi_data(latitude, longitude, weather_data["unix_time"]))
+    print("AOD Data:", get_aod(latitude, longitude))
     score = compute_sunset_score(weather_data)
     location_type = determine_location_type(latitude, longitude)
 
@@ -150,7 +153,6 @@ def get_weather_data(latitude, longitude, day, sunset_time):
         quit()
     
     return {
-        "data": data,
         "humidity": humidity,
         "cloud_cover": cloud_cover,
         "wind": wind,
@@ -187,7 +189,12 @@ def get_aod(latitude, longitude):
     
 # Create a formula to determine the quality of a sunset on a score scale of 0-1000 given a dictionary of data 
 def compute_sunset_score(data):
-    score = 0
+    alpha = 2
+    ideal_cloud_cover = 45
+    cloud_cover_score = alpha * abs(data["cloud_cover"] - ideal_cloud_cover)
+
+    estimated_cloud_height = 0
+    score = cloud_cover_score
     return score
 
 # Either using an API or some other way, determine the location type (urban, suburban, city, rural, beach)
