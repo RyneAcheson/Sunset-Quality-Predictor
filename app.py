@@ -44,7 +44,15 @@ def check_sunset():
     if latitude is None or longitude is None:
         return render_template("index.html", error="Invalid ZIP Code Provided")
     
-    weather_data = get_weather_data(latitude, longitude, "Today")
+    weather_data = {}
+    weather_data.update(get_day_and_time(latitude, longitude, "Today"))
+    print(weather_data)
+    weather_data.update(get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"]))
+    print(weather_data)
+    weather_data.update(get_aqi_data(latitude, longitude, weather_data["unix_time"]))
+    print(weather_data)
+    weather_data.update(get_aod(latitude, longitude))
+    print(weather_data)
     score = compute_sunset_score(weather_data)
     location_type = determine_location_type(latitude, longitude)
 
@@ -152,7 +160,7 @@ def get_weather_data(latitude, longitude, day, sunset_time):
         "dew_point_f": dew_point_f,
     }
 
-def get_aqi_data(latitude, longitude):
+def get_aqi_data(latitude, longitude, unix_time):
     url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat={latitude}&lon={longitude}&appid={OPEN_WEATHER_API_KEY}"
     response = requests.get(url)
 
@@ -174,7 +182,9 @@ def get_aqi_data(latitude, longitude):
     }
 
 def get_aod(latitude, longitude):
-    return 0
+    return {
+        "aod": 0
+    }
 
     
 # Create a formula to determine the quality of a sunset on a score scale of 0-1000 given a dictionary of data 
