@@ -45,13 +45,10 @@ def check_sunset():
         return render_template("index.html", error="Invalid ZIP Code Provided")
     
     weather_data = {}
-    weather_data.update(get_day_and_time(latitude, longitude, "Today"))
-    print(weather_data)
-    weather_data.update(get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"]))
-    print(weather_data)
-    weather_data.update(get_aqi_data(latitude, longitude, weather_data["unix_time"]))
-    print(weather_data)
-    weather_data.update(get_aod(latitude, longitude))
+    weather_data |= get_day_and_time(latitude, longitude, "Today")
+    weather_data |= get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"])
+    weather_data != get_aqi_data(latitude, longitude, weather_data["unix_time"])
+    weather_data |= get_aod(latitude, longitude)
     print(weather_data)
     score = compute_sunset_score(weather_data)
     location_type = determine_location_type(latitude, longitude)
@@ -95,6 +92,7 @@ def geocode_zip(zip_code, country_code="us"):
         }
 
         return info
+    
     else:
         print(f"Geocoding failed for ZIP: {zip_code}. Status Code: {response.status_code}")
 
@@ -163,7 +161,7 @@ def get_weather_data(latitude, longitude, day, sunset_time):
 def get_aqi_data(latitude, longitude, unix_time):
     url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat={latitude}&lon={longitude}&appid={OPEN_WEATHER_API_KEY}"
     response = requests.get(url)
-
+    aqi_data = 0
     if response.status_code == 200:
         data = response.json()
         for i in range(48):
@@ -178,7 +176,7 @@ def get_aqi_data(latitude, longitude, unix_time):
         quit()
 
     return {
-        "aqi_data": aqi_data
+        "aqi_data": 0
     }
 
 def get_aod(latitude, longitude):
