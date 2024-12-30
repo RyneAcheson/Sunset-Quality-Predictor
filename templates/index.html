@@ -20,15 +20,39 @@
     </div>
 
     {% if score is defined %}
-        <hr>
-        <h2>Results for ZIP: {{ zipcode}}</h2>
-        <p>Sunset Score: {{ score }}</p>
-        <p>Location Type: {{ location_type }}</p>
-        <p>Latitude: {{ latitude }}</p>
-        <p>Longitude: {{ longitude }}</p>
-        <p>City: {{ city }}</p>
-        <p>State: {{ state }}</p>
+        <div class="result-container">
+            <h2>Sunset Score: {{ score }}</h2>
+            <p>Location Type: {{ location_type }}</p>
+            <p>{{ city }}, {{ state }}</p>
+        </div>
+
+        <div class="sunset_scene {{ 'low-score' if score < 400 else 'mid-score' if score < 700 else 'high-score' }}">
+        </div>
+
+        <div class="score-bar">
+            <div class="score-item">
+                <img src="{{ url_for('static', filename='sun_icon.png') }}" alt="Sun Icon">
+                <p>Sun</p>
+            </div>
+            <div class="score-item">
+                <p>Score Range</p>
+            </div>
+            <div class="score-item">
+                <p>{{ score }}</p>
+            </div>
+            <div class="score-item">
+                <p>Description</p>
+            </div>
+            <div class="score-item">
+                <button onclick="share()">Share Your Sunset</button>
+            </div>
+        </div>
 
     {% endif %}
 </body>
+<script>
+    function share() {
+        alert("Share functionality to be implemented!");
+    }
+</script>
 </html>

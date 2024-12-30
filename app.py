@@ -53,7 +53,7 @@ def check_sunset():
     print("Weather Data:", get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"]))
     print("AQI Data:", get_aqi_data(latitude, longitude, weather_data["unix_time"]))
     print("AOD Data:", get_aod(latitude, longitude))
-    score = compute_sunset_score(weather_data)
+    score, message = compute_sunset_score(weather_data)
     location_type = determine_location_type(latitude, longitude)
 
     return render_template("index.html",
@@ -63,7 +63,8 @@ def check_sunset():
                            location_type=location_type,
                            city=city,
                            state=state,
-                           zipcode=zipcode)
+                           zipcode=zipcode,
+                           message=message)
 
 def geocode_zip(zip_code, country_code="us"):
     print(zip_code)
@@ -189,13 +190,33 @@ def get_aod(latitude, longitude):
     
 # Create a formula to determine the quality of a sunset on a score scale of 0-1000 given a dictionary of data 
 def compute_sunset_score(data):
+    message = ""
+
     alpha = 2
     ideal_cloud_cover = 45
-    cloud_cover_score = alpha * abs(data["cloud_cover"] - ideal_cloud_cover)
+    cloud_cover_score = alpha * (100 - (abs(data["cloud_cover"] - ideal_cloud_cover)))
 
-    estimated_cloud_height = 0
-    score = cloud_cover_score
-    return score
+    beta = 2
+    ideal_humidity = 40
+    humidity_score = beta * (100 - (abs(data["humidity"] - ideal_humidity)))
+
+    estimated_cloud_height = ((data["surface_temperature_f"] - data["dew_point_f"]) / 4.4) * 1000
+    lower_ideal_bound = 6500
+    upper_ideal_bound = 20000
+    ideal_cloud_height = 12000
+    cloud_height_score = 0
+    R = 3000
+    P = 3.28
+    if estimated_cloud_height < lower_ideal_bound:
+        cloud_height_score = 100 - ((lower_ideal_bound - estimated_cloud_height) / R) ** 2
+    elif lower_ideal_bound <= estimated_cloud_height <= upper_ideal_bound:
+        pass
+    else:
+        pass
+
+    
+    score = cloud_cover_score + humidity_score + cloud_height_score
+    return score, message
 
 # Either using an API or some other way, determine the location type (urban, suburban, city, rural, beach)
 def determine_location_type(latitude, longitude):
