@@ -9,16 +9,28 @@
 <body class="{% if score is defined %}result-background{% else %}default-background{% endif %}">
 
     <div class="logo-container">
-        <img src="../assets/temp-logo.png" alt="Logo" class="logo">
+        <img src="..\assets\sunset.png" alt="Logo" class="logo">
     </div>
 
-    <div class="nav-buttons">
-        <button onclick="navigate('api')">API</button>
-        <button onclick="navigate('home')">Home</button>
-        <button onclick="navigate('about')">About</button>
-        <button onclick="navigate('report')">Report a Sunset</button>
-    </div>
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/api">API</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/report">Report a Sunset</a></li>
+    </ul>
 
+    <div class="welcome-container">
+        <h1 class="welcome-text">Welcome.</h1>
+        <p class="welcome-subtext">Discover the beauty of sunsets in your area.</p>
+        <p class="welcome-subtext">Enter your zip code to find the perfect sunset score.</p>
+        <form class="search-box" action="{{ url_for('check_sunset') }}" method="post">
+            <input type="text" name="zipcode" placeholder="Enter your zip code" required>
+            <button type="submit">
+                <img src="..\assets\sunset.png" alt = "Search" />
+            </button>
+        </form>
+    </div>
+<!--
     <div class="sunset-container">
         <h1>Check Your Sunset Score!</h1>
         {% if error %}
@@ -29,7 +41,7 @@
             <button type="submit">Get Score</button>
         </form>
     </div>
-
+-->
     {% if score is defined %}
         <div class="result-container">
             <h2>Sunset Score: {{ score }}</h2>
