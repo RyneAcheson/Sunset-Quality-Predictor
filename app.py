@@ -57,7 +57,7 @@ def check_sunset():
     location_type = determine_location_type(latitude, longitude)
 
     return render_template("index.html",
-                           score=score,
+                           score=1000,
                            latitude=latitude,
                            longitude=longitude,
                            location_type=location_type,

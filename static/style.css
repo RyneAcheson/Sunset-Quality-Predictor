@@ -8,6 +8,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
+    background-image: url(../static/default-background.jpg);
 }
 
 .sunset-container {
@@ -39,15 +40,15 @@ body {
 }
 
 .low-score {
-    background-image: url("../static/sunset_low.jpg");
+    background-image: url("../static/poor-sunset-background.jpg");
 }
 
 .mid-score {
-    background-image: url("../static/sunset_mid.jpg");
+    background-image: url("../static/medium-sunset-background.jpg");
 }
 
 .high-score {
-    background-image: url("../static/sunset_high.jpg");
+    background-image: url("../static/sunset-background.png");
 }
 
 .score-bar {
