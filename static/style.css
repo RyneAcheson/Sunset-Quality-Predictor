@@ -74,7 +74,7 @@ body {
         0 0 20px rgba(255, 218, 185, 0.8),
         0 0 40px rgba(255, 228, 196, 0.5),
         0 0 60px rgba(255, 239, 213, 0.4);
-    margin-bottom: 20px;
+    margin-bottom: 0px;
 }
 
 /* Welcome Text and Search Box */
@@ -187,3 +187,11 @@ body {
 .button-bar button:hover {
     background-color: #d97f11;
 }
+
+.hill-svg {
+    position: absolute; /* or use 'fixed' if you want it to stay in place on scroll */
+    bottom: 0;
+    right: 0;
+    width: 50%;
+    height: auto;
+  }

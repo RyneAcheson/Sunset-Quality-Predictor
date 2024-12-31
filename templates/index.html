@@ -46,6 +46,40 @@
             <button onclick="action5()">Share your Sunset!</button>
         </div>
     {% endif %}
+
+
+    <svg 
+    class="hill-svg"
+    viewBox="0 0 600 300"
+    preserveAspectRatio="xMaxYMax meet"
+    xmlns="http://www.w3.org/2000/svg"
+    >
+    <defs>
+      <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#a8e063" />
+        <stop offset="100%" stop-color="#56ab2f" />
+      </linearGradient>
+    </defs>
+  
+    <!-- 
+      Explanation of this path:
+      - M150,150    Move to just beyond mid-bottom (x=150, y=150)
+      - A150,150... Arc with radii (150,150) up to (300,0)
+        * 0 0,1 means no rotation, small arc, sweep is clockwise
+      - L300,150    Line straight down from the peak to the bottom-right
+      - Z           Close the path
+    -->
+    <path
+      d="
+        M0,300
+        A600,300 0 0,1 600,0
+        L600,300
+        Z
+      "
+      fill="url(#greenGradient)"
+    />
+  </svg>
+      
 </body>
 <script>
     function navigate(page) {
