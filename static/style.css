@@ -188,10 +188,3 @@ body {
     background-color: #d97f11;
 }
 
-.hill-svg {
-    position: absolute; /* or use 'fixed' if you want it to stay in place on scroll */
-    bottom: 0;
-    right: 0;
-    width: 50%;
-    height: auto;
-  }
