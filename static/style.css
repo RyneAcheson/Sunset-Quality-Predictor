@@ -28,9 +28,14 @@ body {
     list-style-type: none;
     display: flex;
     justify-content: flex-end;
-    gap: 20px;
+    /* Make sure to account for hamburger menu when view size shrinks*/
+    gap: 40px;
     margin: 0;
     padding: 10px;
+    position: relative;
+    top: 4%;
+    right: 3%;
+
 }
 
 .nav-links li {
@@ -39,8 +44,10 @@ body {
 
 .nav-links a {
     text-decoration: none;
-    color: white;
+    color: rgb(236, 122, 8);
     font-size: 16px;
+    font-family:'Inter', 'sans-serif';
+    font-weight: bolder;
     position: relative;
     transition: color 0.3s ease, text-shadow 0.3s ease;
 }
@@ -57,7 +64,7 @@ body {
 }
 
 .nav-links a:hover {
-    text-shadow: 0 0 10px blue;
+    text-shadow: 0 0 10px white;
 }
 
 .nav-links a:hover::after {
@@ -113,9 +120,9 @@ body {
 
 .search-box input {
     font-size: 1rem;
-    padding: 10px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 5px 0 0 5px;
+    border-radius: 20px 0 0 20px;
     outline: none;
     width: 250px;
     box-sizing: border-box;
@@ -124,18 +131,20 @@ body {
 .search-box button {
     background-color: white;
     border: none;
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 20px 20px 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 100%;
+    padding: 5px;
 }
 
+
 .search-box button img {
-    width: 35px;
-    height: 35px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Background */
