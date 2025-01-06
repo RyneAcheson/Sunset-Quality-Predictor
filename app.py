@@ -57,7 +57,7 @@ def check_sunset():
     location_type = determine_location_type(latitude, longitude)
 
     return render_template("index.html",
-                           score=1000,
+                           score=score,
                            latitude=latitude,
                            longitude=longitude,
                            location_type=location_type,
@@ -201,18 +201,22 @@ def compute_sunset_score(data):
     humidity_score = beta * (100 - (abs(data["humidity"] - ideal_humidity)))
 
     estimated_cloud_height = ((data["surface_temperature_f"] - data["dew_point_f"]) / 4.4) * 1000
-    lower_ideal_bound = 6500
+    lower_ideal_bound = 5000
     upper_ideal_bound = 20000
     ideal_cloud_height = 12000
-    cloud_height_score = 0
-    R = 3000
-    P = 3.28
-    if estimated_cloud_height < lower_ideal_bound:
-        cloud_height_score = 100 - ((lower_ideal_bound - estimated_cloud_height) / R) ** 2
-    elif lower_ideal_bound <= estimated_cloud_height <= upper_ideal_bound:
-        pass
-    else:
-        pass
+    cloud_height_score = 100 - ((estimated_cloud_height - ideal_cloud_height) / (upper_ideal_bound - lower_ideal_bound))**2 * 100
+
+    # Message
+    if 40 <= data["cloud_cover"] <= 60:
+        message += "-> Cloud cover is ideal, between 40% and 60%. \n"
+    elif 60 < data["cloud_cover"] <= 85:
+        message += "-> Cloud cover is semi-ideal, between 60% and %85. \n"
+    elif 85 < data["cloud_cover"]:
+        message += "-> Cloud cover is non-ideal, greater than 85%. \n"
+    if 25 <= data["cloud_cover"] <= 40:
+        message += "-> Cloud cover is semi-ideal, between 25% and 40%. \n"
+    if data["cloud_cover"] < 25:
+        message += "-> Cloud cover is non-ideal, less than 25%. \n"
 
     
     score = cloud_cover_score + humidity_score + cloud_height_score

@@ -15,9 +15,9 @@
 
     <ul class="nav-links">
         <li><a href="/">Home</a></li>
-        <li><a href="/api">API</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/share">Share Sunset</a></li>
+        <li onclick="navigate('api')"><a href="/api">API</a></li>
+        <li onclick="navigate('about')"><a href="/about">About</a></li>
+        <li onclick="navigate('share')"><a href="/share">Share Sunset</a></li>
     </ul>
 
     <div class="welcome-container">
@@ -61,8 +61,8 @@
             case 'about':
                 alert("Navigate to About");
                 break;
-            case 'report':
-                alert("Navigate to Report a Sunset");
+            case 'share':
+                alert("Navigate to Share Sunset");
                 break;
         }
     }
