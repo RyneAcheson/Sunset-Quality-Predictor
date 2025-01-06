@@ -47,13 +47,16 @@ def check_sunset():
     weather_data = {}
     weather_data |= get_day_and_time(latitude, longitude, "Today")
     weather_data |= get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"])
-    weather_data != get_aqi_data(latitude, longitude, weather_data["unix_time"])
+    weather_data["aqi_data"] = get_aqi_data(latitude, longitude, weather_data["unix_time"])
+    print(weather_data.keys())
     weather_data |= get_aod(latitude, longitude)
     print("Day and Time Data:", get_day_and_time(latitude, longitude, "Today"))
     print("Weather Data:", get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"]))
     print("AQI Data:", get_aqi_data(latitude, longitude, weather_data["unix_time"]))
     print("AOD Data:", get_aod(latitude, longitude))
     score, message = compute_sunset_score(weather_data)
+    print(f"{message}")
+    print(f"Score: {score}")
     location_type = determine_location_type(latitude, longitude)
 
     return render_template("index.html",
@@ -179,7 +182,7 @@ def get_aqi_data(latitude, longitude, unix_time):
         quit()
 
     return {
-        "aqi_data": 0
+        "aqi_data": aqi_data
     }
 
 def get_aod(latitude, longitude):
@@ -190,36 +193,95 @@ def get_aod(latitude, longitude):
     
 # Create a formula to determine the quality of a sunset on a score scale of 0-1000 given a dictionary of data 
 def compute_sunset_score(data):
-    message = ""
-
-    alpha = 2
-    ideal_cloud_cover = 45
-    cloud_cover_score = alpha * (100 - (abs(data["cloud_cover"] - ideal_cloud_cover)))
-
-    beta = 2
-    ideal_humidity = 40
-    humidity_score = beta * (100 - (abs(data["humidity"] - ideal_humidity)))
-
-    estimated_cloud_height = ((data["surface_temperature_f"] - data["dew_point_f"]) / 4.4) * 1000
-    lower_ideal_bound = 5000
-    upper_ideal_bound = 20000
-    ideal_cloud_height = 12000
-    cloud_height_score = 100 - ((estimated_cloud_height - ideal_cloud_height) / (upper_ideal_bound - lower_ideal_bound))**2 * 100
-
-    # Message
-    if 40 <= data["cloud_cover"] <= 60:
-        message += "-> Cloud cover is ideal, between 40% and 60%. \n"
-    elif 60 < data["cloud_cover"] <= 85:
-        message += "-> Cloud cover is semi-ideal, between 60% and %85. \n"
-    elif 85 < data["cloud_cover"]:
-        message += "-> Cloud cover is non-ideal, greater than 85%. \n"
-    if 25 <= data["cloud_cover"] <= 40:
-        message += "-> Cloud cover is semi-ideal, between 25% and 40%. \n"
-    if data["cloud_cover"] < 25:
-        message += "-> Cloud cover is non-ideal, less than 25%. \n"
-
     
-    score = cloud_cover_score + humidity_score + cloud_height_score
+    def compute_cloud_score(data, score, message):
+        alpha = 2
+        ideal_cloud_cover = 45
+        cloud_cover_score = alpha * (100 - (abs(data["cloud_cover"] - ideal_cloud_cover)))
+
+        estimated_cloud_height = ((data["surface_temperature_f"] - data["dew_point_f"]) / 4.4) * 1000
+        lower_ideal_bound = 5000
+        upper_ideal_bound = 20000
+        ideal_cloud_height = 12000
+        cloud_height_score = 100 - ((estimated_cloud_height - ideal_cloud_height) / (upper_ideal_bound - lower_ideal_bound))**2 * 100
+        
+        score += cloud_cover_score + cloud_height_score
+
+        if 40 <= data["cloud_cover"] <= 60:
+            message += f"-> Cloud cover is ideal, between 40% and 60%."
+        elif 60 < data["cloud_cover"] <= 85:
+            message += f"-> Cloud cover is semi-ideal, between 60% and %85."
+        elif 85 < data["cloud_cover"]:
+            message += f"-> Cloud cover is non-ideal, greater than 85%."
+        elif 25 <= data["cloud_cover"] <= 40:
+            message += f"-> Cloud cover is semi-ideal, between 25% and 40%."
+        elif data["cloud_cover"] < 25:
+            message += f"-> Cloud cover is non-ideal, less than 25%."
+
+        message += f" ({data['cloud_cover']}%), Score: {cloud_cover_score}/200 \n"
+
+        if estimated_cloud_height < 2000:
+            message += f"-> Estimated cloud height is very low, <2000 feet."
+        elif estimated_cloud_height < 5000:
+            message += f"-> Estimated cloud height is low, <5000 feet."
+        elif estimated_cloud_height < 12000:
+            message += f"-> Estimated cloud height is ideal, Between 5000 and 12000 feet."
+        elif estimated_cloud_height < 20000:
+            message += f"-> Estimated cloud height is ideal, Between 12000 and 20000 feet."
+        else:
+            message += f"-> Estimated cloud height is very high, >20000 feet."
+
+        message += f" ({estimated_cloud_height} feet), Score: {cloud_height_score}/200 \n"
+        return score, message
+
+    def compute_humidity_score(data, score, message):
+        beta = 2
+        ideal_humidity = 50
+        humidity_score = beta * (100 - (abs(data["humidity"] - ideal_humidity)))
+        score += humidity_score
+
+        if data["humidity"] < 20:
+            message += f"-> Humidity is very low, <20%."
+        elif data["humidity"] < 35:
+            message += f"-> Humidity is low, between 20% and 35%."
+        elif data["humidity"] < 65:
+            message += f"-> Humidity is ideal, between 35% and 65%."
+        elif data["humidity"] < 80:
+            message += f"-> Humidity is high, between 65% and 80%."
+        else:
+            message += f"-> Humidity is very high, >80%."
+        
+        message += f" ({data['humidity']}%), Score: {humidity_score}/200 \n"
+
+        return score, message
+    
+    def compute_particulate_score(data, score, message):
+        print(f" AHHHHHHHHHHHHH {data['aqi_data']['aqi_data'].keys()}")
+        small_particulates = data["aqi_data"]["aqi_data"]["components"]["pm2_5"]
+        large_particulates = data["aqi_data"]["aqi_data"]["components"]["pm10"] - small_particulates
+        particulate_score = 0
+        score += particulate_score
+        
+        if small_particulates < 10:
+            message += "-> Very few small particulates in the air."
+        elif small_particulates < 25:
+            message += "-> Few small particulates in the air." 
+        elif small_particulates < 50:
+            message += "-> Many small particulates in the air."
+        elif small_particulates < 75:
+            message += "-> Very many small particulates in the air."
+        else:
+            message += "-> Extreme number of small particulates in the air."
+
+        message += f" ({small_particulates}), Score: {particulate_score}/X00 \n"
+
+        return score, message
+    
+    score, message = 0, "<------MESSAGE------>\n"
+    score, message = compute_cloud_score(data, score, message)
+    score, message = compute_humidity_score(data, score, message)
+    score, message = compute_particulate_score(data, score, message)
+
     return score, message
 
 # Either using an API or some other way, determine the location type (urban, suburban, city, rural, beach)
