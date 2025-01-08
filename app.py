@@ -46,24 +46,22 @@ def check_sunset():
     
     weather_data = {}
     weather_data |= get_day_and_time(latitude, longitude, "Today")
-    weather_data |= get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"])
+    weather_data |= get_weather_data(latitude, longitude, "Today", weather_data["sunset_hour"])
     weather_data["aqi_data"] = get_aqi_data(latitude, longitude, weather_data["unix_time"])
     print(weather_data.keys())
-    weather_data |= get_aod(latitude, longitude)
+    weather_data |= get_area_type(latitude, longitude)
     print("Day and Time Data:", get_day_and_time(latitude, longitude, "Today"))
-    print("Weather Data:", get_weather_data(latitude, longitude, "Today", weather_data["sunset_time"]))
+    print("Weather Data:", get_weather_data(latitude, longitude, "Today", weather_data["sunset_hour"]))
     print("AQI Data:", get_aqi_data(latitude, longitude, weather_data["unix_time"]))
-    print("AOD Data:", get_aod(latitude, longitude))
+    print("Area Type:", get_area_type(latitude, longitude))
     score, message = compute_sunset_score(weather_data)
     print(f"{message}")
     print(f"Score: {score}")
-    location_type = determine_location_type(latitude, longitude)
 
     return render_template("index.html",
                            score=score,
                            latitude=latitude,
                            longitude=longitude,
-                           location_type=location_type,
                            city=city,
                            state=state,
                            zipcode=zipcode,
@@ -137,8 +135,8 @@ def get_day_and_time(latitude, longitude, target_day):
         "day": day
     }
 
-def get_weather_data(latitude, longitude, day, sunset_time):
-    url = f"http://api.weatherapi.com/v1/history.json?key={WEATHER_API_KEY}&q={latitude},{longitude}&dt={day}&hour={sunset_time}&aqi=yes"
+def get_weather_data(latitude, longitude, day, sunset_hour):
+    url = f"http://api.weatherapi.com/v1/history.json?key={WEATHER_API_KEY}&q={latitude},{longitude}&dt={day}&hour={sunset_hour}&aqi=yes"
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -185,9 +183,9 @@ def get_aqi_data(latitude, longitude, unix_time):
         "aqi_data": aqi_data
     }
 
-def get_aod(latitude, longitude):
+def get_area_type(latitude, longitude):
     return {
-        "aod": 0
+        "area_type": "rural"
     }
 
     
@@ -195,15 +193,15 @@ def get_aod(latitude, longitude):
 def compute_sunset_score(data):
     
     def compute_cloud_score(data, score, message):
-        alpha = 2
+        alpha = 2.5
         ideal_cloud_cover = 45
-        cloud_cover_score = alpha * (100 - (abs(data["cloud_cover"] - ideal_cloud_cover)))
+        cloud_cover_score = round(alpha * (100 - (abs(data["cloud_cover"] - ideal_cloud_cover))))
 
         estimated_cloud_height = ((data["surface_temperature_f"] - data["dew_point_f"]) / 4.4) * 1000
         lower_ideal_bound = 5000
         upper_ideal_bound = 20000
         ideal_cloud_height = 12000
-        cloud_height_score = 100 - ((estimated_cloud_height - ideal_cloud_height) / (upper_ideal_bound - lower_ideal_bound))**2 * 100
+        cloud_height_score = round(2.5 * (100 - ((estimated_cloud_height - ideal_cloud_height) / (upper_ideal_bound - lower_ideal_bound))**2 * 100))
         
         score += cloud_cover_score + cloud_height_score
 
@@ -218,7 +216,7 @@ def compute_sunset_score(data):
         elif data["cloud_cover"] < 25:
             message += f"-> Cloud cover is non-ideal, less than 25%."
 
-        message += f" ({data['cloud_cover']}%), Score: {cloud_cover_score}/200 \n"
+        message += f" ({data['cloud_cover']}%), Score: {cloud_cover_score}/250 \n"
 
         if estimated_cloud_height < 2000:
             message += f"-> Estimated cloud height is very low, <2000 feet."
@@ -231,13 +229,13 @@ def compute_sunset_score(data):
         else:
             message += f"-> Estimated cloud height is very high, >20000 feet."
 
-        message += f" ({estimated_cloud_height} feet), Score: {cloud_height_score}/200 \n"
+        message += f" ({estimated_cloud_height} feet), Score: {cloud_height_score}/250 \n"
         return score, message
 
     def compute_humidity_score(data, score, message):
-        beta = 2
+        beta = 2.5
         ideal_humidity = 50
-        humidity_score = beta * (100 - (abs(data["humidity"] - ideal_humidity)))
+        humidity_score = round(beta * (100 - (abs(data["humidity"] - ideal_humidity))))
         score += humidity_score
 
         if data["humidity"] < 20:
@@ -251,21 +249,41 @@ def compute_sunset_score(data):
         else:
             message += f"-> Humidity is very high, >80%."
         
-        message += f" ({data['humidity']}%), Score: {humidity_score}/200 \n"
+        message += f" ({data['humidity']}%), Score: {humidity_score}/250 \n"
 
         return score, message
     
     def compute_particulate_score(data, score, message):
-        print(f" AHHHHHHHHHHHHH {data['aqi_data']['aqi_data'].keys()}")
         small_particulates = data["aqi_data"]["aqi_data"]["components"]["pm2_5"]
-        large_particulates = data["aqi_data"]["aqi_data"]["components"]["pm10"] - small_particulates
-        particulate_score = 0
+        large_particulates = data["aqi_data"]["aqi_data"]["components"]["pm10"]
+
+        small_pm_score = 0
+        if 10 <= small_particulates <= 30:
+            small_pm_score = 100
+        elif small_particulates < 10:
+            small_pm_score = max(0, (small_particulates / 10) * 100)
+        else:
+            small_pm_score = max(0, 100 - ((small_particulates - 30) / 20) * 100)
+
+        small_pm_score = round(small_pm_score * 1.25)
+
+        large_pm_score = 0
+        if 20 <= large_particulates <= 50:
+            large_pm_score = 100
+        elif large_particulates < 20:
+            large_pm_score = max(0, (large_particulates / 20) * 100)
+        elif large_particulates > 50:
+            large_pm_score = max(0, 100 - ((large_particulates - 50) / 30) * 100)
+
+        large_pm_score = round(large_pm_score * 1.25)
+
+        particulate_score = small_pm_score + large_pm_score
         score += particulate_score
         
         if small_particulates < 10:
-            message += "-> Very few small particulates in the air."
-        elif small_particulates < 25:
-            message += "-> Few small particulates in the air." 
+            message += "-> Very few small particulates in the air. Non-ideal"
+        elif 10 <= small_particulates < 30:
+            message += "-> Few small particulates in the air. Ideal" 
         elif small_particulates < 50:
             message += "-> Many small particulates in the air."
         elif small_particulates < 75:
@@ -273,20 +291,39 @@ def compute_sunset_score(data):
         else:
             message += "-> Extreme number of small particulates in the air."
 
-        message += f" ({small_particulates}), Score: {particulate_score}/X00 \n"
+        message += f" ({small_particulates}), Score: {small_pm_score}/125 \n"
+
+        if large_particulates < 10:
+            message += "-> Very few large particulates in the air. Non-ideal"
+        elif large_particulates < 20:
+            message += "-> Few large particulates in the air. Non-ideal" 
+        elif 20 <= large_particulates <= 50:
+            message += "-> Many large particulates in the air. Ideal"
+        elif large_particulates < 75:
+            message += "-> Very many large particulates in the air."
+        else:
+            message += "-> Extreme number of large particulates in the air."
+
+        message += f" ({large_particulates}), Score: {large_pm_score}/125 \n"
 
         return score, message
     
+    '''
+    def compute_aod_score(data, score, message):
+
+        k, c = 
+        aod_score = 0
+        message += ""
+        score += aod_score
+        return score, message
+    '''
     score, message = 0, "<------MESSAGE------>\n"
     score, message = compute_cloud_score(data, score, message)
     score, message = compute_humidity_score(data, score, message)
     score, message = compute_particulate_score(data, score, message)
+    # score, message = compute_aod_score(data, score, message)
 
     return score, message
-
-# Either using an API or some other way, determine the location type (urban, suburban, city, rural, beach)
-def determine_location_type(latitude, longitude):
-    return "beach"
 
 if __name__ == "__main__":
     app.run(debug=True)
